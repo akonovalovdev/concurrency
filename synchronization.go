@@ -12,6 +12,7 @@ func main() {
 	counter := 20
 	for i := 0; i <= counter; i++ {
 		wg.Add(1)
+		i := i
 		go func() {
 			defer wg.Done()
 			fmt.Println(i * i)
