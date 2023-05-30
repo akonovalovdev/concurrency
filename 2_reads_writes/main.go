@@ -30,6 +30,8 @@ func main() {
 		go func() {
 			defer wg.Done()
 
+			mu.RLock()
+			defer mu.RUnlock()
 			_, _ = storage[i]
 		}()
 	}
