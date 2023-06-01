@@ -7,18 +7,25 @@ import (
 	"time"
 )
 
-func main() {
-	rand.Seed(time.Now().Unix())
-	chanForResp := make(chan int) // канал который будет получать ответ
-	go RPCCall(chanForResp)       //вызов удалённой процедуры
-
-	result := <-chanForResp
-	fmt.Println(result)
+type RPC struct {
+	jobs chan int
+	rand *rand.Rand
 }
 
-func RPCCall(ch chan<- int) { //может быть сеть или сервер
-	// sleep 0-4 sec
-	time.Sleep(time.Second * time.Duration(rand.Intn(5)))
+func (r *RPC) Call() {
+	time.Sleep(time.Second * time.Duration(r.rand.Intn(5))) // sleep 0-4 sec
 
-	ch <- rand.Int()
+	r.jobs <- rand.Int()
+}
+
+func main() {
+	rpc := &RPC{
+		jobs: make(chan int),
+		rand: rand.New(rand.NewSource(time.Now().UnixNano())),
+	}
+
+	go rpc.Call() //вызов удалённой процедуры
+
+	result := <-rpc.jobs
+	fmt.Println(result)
 }
