@@ -12,6 +12,8 @@ func main() {
 	ch1 <- 1
 	ch2 <- 2
 	ch2 <- 4
+	ch1 <- 1
+	ch1 <- 1
 	close(ch1)
 	close(ch2)
 
@@ -22,7 +24,7 @@ func main() {
 	}
 }
 
-func merge[T any](chans ...chan T) chan T {
+func merge[T any](chans ...chan T) chan T { //хороший вариант ассинхронная функция
 	result := make(chan T)
 	wg := sync.WaitGroup{} //wait group когда все горутины запишут, канал должен закрыться
 	for _, singleChan := range chans {
@@ -37,12 +39,16 @@ func merge[T any](chans ...chan T) chan T {
 	}
 
 	// так как из канала никто не читает, а он создан без буфера wg.Wait необходимо вызывать в отдельной горутине,
-	//а не в мэйне
+	//а не в основной функции
+	go func() { //горутина запустится когда все остальные горутины доработают и запишут данные в канал
+		wg.Wait()
+		close(result)
+	}()
 
 	return result
 }
 
-//func syncMerge[T any](chans ...chan T) chan T { // синхронная функция
+//func syncMerge[T any](chans ...chan T) chan T { // плохой вариант синхронная функция
 //	l := 0
 //	for _, singleCh := range chans {
 //		l += len(singleCh)
